@@ -28,28 +28,33 @@ def predict_url(url):
 
 # Streamlit UI
 st.title("🔗 URL Safety Checker (AI-Powered)")
-st.write("Enter a URL below or upload a text file with multiple URLs.")
+st.write("Enter one or more URLs (one per line) **or** upload a `.txt` file.")
 
-# Single URL input
-url_input = st.text_input("Enter a URL:")
+# Multiline text input
+url_input = st.text_area("Paste URLs here (one per line):")
 
-if st.button("Check URL"):
-    if url_input.strip() == "":
-        st.warning("Please enter a URL.")
-    else:
-        result = predict_url(url_input)
-        st.success(f"Prediction: {result}")
+# File upload
+uploaded_file = st.file_uploader("Or upload a .txt file with URLs:", type="txt")
 
-# File upload for multiple URLs
-uploaded_file = st.file_uploader("Or upload a .txt file with URLs (one per line):", type="txt")
+# Combine sources
+all_urls = []
+
+if url_input.strip():
+    all_urls.extend(url_input.strip().splitlines())
 
 if uploaded_file is not None:
-    urls = uploaded_file.read().decode("utf-8").splitlines()
-    st.write("### Results:")
-    for i, url in enumerate(urls, 1):
-        if url.strip():
-            try:
-                result = predict_url(url.strip())
-                st.write(f"{i}. **{url.strip()}** → {result}")
-            except Exception as e:
-                st.write(f"{i}. **{url.strip()}** → ❌ Error: {e}")
+    file_lines = uploaded_file.read().decode("utf-8").splitlines()
+    all_urls.extend(file_lines)
+
+if st.button("Check URLs"):
+    if not all_urls:
+        st.warning("Please enter at least one URL.")
+    else:
+        st.write("### Results:")
+        for i, url in enumerate(all_urls, 1):
+            if url.strip():
+                try:
+                    result = predict_url(url.strip())
+                    st.write(f"{i}. **{url.strip()}** → {result}")
+                except Exception as e:
+                    st.write(f"{i}. **{url.strip()}** → ❌ Error: {e}")
