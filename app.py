@@ -1,54 +1,3 @@
-# import pickle
-# import os
-# from src.pipeline.predict_pipeline import PredictPipeline
-
-
-# # get the path to the models folder
-# model_path = "./artifacts/Best Model"
-
-# # load the model
-# with open(os.path.join(model_path, 'Decision Tree.pkl'), 'rb') as f:
-#     model = pickle.load(f)
-
-# # print(model)
-# pred = PredictPipeline()
-
-# def predict(url):
-    
-#     # url = request.json['url']
-#     print("URL: " + url)
-    
-#     transform_url = pred.transformURL(url)
-
-#     transform_url = transform_url.reshape(1, -1)
-
-#     # print("transform_url" , transform_url)
-
-#     prediction = model.predict(transform_url)
-    
-#     # 'benign', 'defacement','phishing','malware'
-#     if(prediction == 0):
-#         res = 'benign'
-#     elif(prediction == 1):
-#         res = 'defacement'
-#     elif(prediction == 2):
-#         res = 'phishing'
-#     else:
-#         res = 'malware'
-
-#     print("Prediction: " + res)
-#     return res
-
-
-# if __name__ == '__main__':
-#     import argparse
-#     parser = argparse.ArgumentParser(description='Predict malicious URL')
-#     parser.add_argument('--url', type=str, help='URL to predict')
-#     args = parser.parse_args()
-#     # Run the prediction function with the provided URL
-#     predict(args.url)  # Example URL for testing
-
-
 import streamlit as st
 import pickle
 import os
@@ -79,8 +28,9 @@ def predict_url(url):
 
 # Streamlit UI
 st.title("🔗 URL Safety Checker (AI-Powered)")
-st.write("Enter a URL below to check if it's safe or potentially dangerous.")
+st.write("Enter a URL below or upload a text file with multiple URLs.")
 
+# Single URL input
 url_input = st.text_input("Enter a URL:")
 
 if st.button("Check URL"):
@@ -89,3 +39,17 @@ if st.button("Check URL"):
     else:
         result = predict_url(url_input)
         st.success(f"Prediction: {result}")
+
+# File upload for multiple URLs
+uploaded_file = st.file_uploader("Or upload a .txt file with URLs (one per line):", type="txt")
+
+if uploaded_file is not None:
+    urls = uploaded_file.read().decode("utf-8").splitlines()
+    st.write("### Results:")
+    for i, url in enumerate(urls, 1):
+        if url.strip():
+            try:
+                result = predict_url(url.strip())
+                st.write(f"{i}. **{url.strip()}** → {result}")
+            except Exception as e:
+                st.write(f"{i}. **{url.strip()}** → ❌ Error: {e}")
